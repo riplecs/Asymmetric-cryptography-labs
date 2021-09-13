@@ -8,12 +8,18 @@ Created on Wed Sep  1 14:50:27 2021
 import random 
 from bitstring import BitArray
 import sys
+import gmpy2
 
 
 L20 = [0, 11, 15, 17]
 L89 = [37, 88]
+#Блюма-Мікала
+A = int('5B88C41246790891C095E2878880342E88C79974303BD0400B090FE38A688356', 16)
+Q = int('675215CC3E227D3216C056CFA8F8822BB486F788641E85E0DE77097E1DB049F1', 16)
+#BBS
 p = int('D5BBB96D30086EC484EBA3D7F9CAEB07', 16)
 q = int('425D2B9BFDB25B9CF6C416CC6E37B59C1F', 16)
+#Lehmer
 A = 2**16 + 1
 M = 2**32
 C = 119
@@ -111,14 +117,25 @@ def Blum_Mikal(a, q):
     x = []
     T0 = random.randint(0, p-1)
     for i in range(32):
-        T1 = (a**T0)%p
+        T1 = gmpy2.powmod(a, T0, p)
         x.append(1 if T1 < (p-1)/2 else 0)
         T0 = T1
     return x
-#A = int('5B88C41246790891C095E2878880342E88C79974303BD0400B090FE38A688356', 16)
-#Q = int('675215CC3E227D3216C056CFA8F8822BB486F788641E85E0DE77097E1DB049F1', 16)
-A = int('5B83', 16)
-Q = int('61D1', 16)
+
+
+def Blim_Mikal_bytes(a, q):
+    p = 2*q + 1
+    x = []
+    T0 = random.randint(0, p-1)
+    for i in range(4):
+        T1 = gmpy2.powmod(a, T0, p)
+        k = 1
+        while k*(p-1)/256>T1 or (k+1)*(p-1)/256 <= T1:
+            k+=1
+        k = bin(k)[2:]
+        x.append('0'*(8 - len(k)) + k)
+        T0 = T1
+    return x
 
       
 def BBS(p, q):
