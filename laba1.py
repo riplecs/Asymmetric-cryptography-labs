@@ -95,17 +95,13 @@ def librarian(file):
     return BitArray(res.encode('utf-8')).bin[:32]
 
 
-def rotate(v, n):
-    return v[-n:] + v[:-n]
-
-
 def Wolfram():
     r0 = generate_state(32)
     res = []
     for i in range(32):
         res.append(r0[-1])
-        f = rotate(r0, -1)
-        s = rotate(r0, 1)
+        f = r0[1:] + r0[:1]
+        s = r0[-1:] + r0[:-1]
         sf = [0 if s[i]==r0[i]==0 else 1 for i in range(32)]
         r = [(sf[i]+f[i])%2 for i in range(32)]
         r0 = r
