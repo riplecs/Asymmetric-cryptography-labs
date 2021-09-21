@@ -171,12 +171,12 @@ def group_to_bytes(vect):
 
 
 
-def equiprobability_test(nums, l = 255):
-    n = len(nums)/256
+def equiprobability_test(nums, l = 255, m = 256):
+    n = len(nums)/m
     vi = []
-    for j in range(256):
+    for j in range(m):
         vi.append(nums.count(int(j)))
-    hi2 = sum(((vi[i] - n)**2)/n for i in range(256))
+    hi2 = sum(((vi[i] - n)**2)/n for i in range(m))
     print('   Hi2 = ', hi2)
     for alpha in alphas:
         hi2_alpha = np.sqrt(2*l)*quantiles[alpha] + l
@@ -187,17 +187,17 @@ def equiprobability_test(nums, l = 255):
 
             
   
-def independence_test(nums, l = 65025):
+def independence_test(nums, l = 65025, m = 256):
     n = int(len(nums)/2)
     pairs = [(nums[2*i], nums[2*i - 1]) for i in range(n)]
-    v = np.zeros((256, 256))
+    v = np.zeros((m, m))
     for pair in set(pairs):
         v[pair[0]][pair[1]] = pairs.count(pair)
-    vi = [sum(v[i][j] for j in range(256)) for i in range(256)]
-    alpha = [sum(v[i][j] for i in range(256)) for j in range(256)]
+    vi = [sum(v[i][j] for j in range(m)) for i in range(m)]
+    alpha = [sum(v[i][j] for i in range(m)) for j in range(m)]
     hi2 = 0
-    for i in range(256):
-        for j in range(256):
+    for i in range(m):
+        for j in range(m):
             if vi[i]*alpha[j]!=0:
                 hi2 += ((v[i][j]**2)/(vi[i]*alpha[j]))
     hi2 = n*(hi2 - 1)
@@ -210,6 +210,34 @@ def independence_test(nums, l = 65025):
             print(f'   Test failed with alpha = {alpha}')
             
             
+def homogeneity_test(nums, r = 16, m = 256):
+    m_ = int(m/r)
+    n = m_*r 
+    l = 255*(r - 1)
+    strings = []
+    for i in range(0, len(nums), r):
+        strings.append(nums[i: i + r])
+    v = np.zeros((m, r))
+    for i in range(m):
+        for j in range(r):
+            v[i][j] = strings[j].count(i)
+    vi = [sum(v[i][j] for j in range(r)) for i in range(m)]
+    alpha = m_
+    hi2 = 0
+    for i in range(m):
+        for j in range(r):
+            if vi[i]*alpha != 0 :
+                hi2 += (v[i][j]**2)/(vi[i]*alpha)
+    hi2 = n*(hi2 - 1)
+    print('   Hi2 = ', hi2)
+    for alpha in alphas:
+        hi2_alpha = np.sqrt(2*l)*quantiles[alpha] + l
+        if hi2 <= hi2_alpha:
+            print(f'   Test passed with α = {alpha}, Hi2_(1-α) = {hi2_alpha}')
+        else:
+            print(f'   Test failed with α = {alpha}, Hi2_(1-α) = {hi2_alpha}')
+    
+          
 print('DEFAULT GENERATOR: ')
 start_time = time.time()
 vect1 = python_generator(2**21)
