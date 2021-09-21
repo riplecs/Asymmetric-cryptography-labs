@@ -175,12 +175,12 @@ vect12 = BBS_bytes(p, q)
 
 
 def group_to_bytes(vect):
-    vect = '0'*(len(vect)%8) + vect
+    if len(vect)%8!=0:
+        vect = '0'*(8 - len(vect)%8) + vect
     result = []
     for i in range(0, len(vect), 8):
         result.append(int(vect[i:i+8], 2))
     return result
-
 
 
 
