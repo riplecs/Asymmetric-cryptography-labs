@@ -226,8 +226,8 @@ def independence_test(nums, l = 65025):
     hi2 = 0
     for i in range(256):
         for j in range(256):
-            hi2 += ((v[i][j]**2)/(vi[i]*alpha[j]) if vi[i]*alpha[j]!=0 else 0)
-    hi2 = n*(hi2 - 1)
+            if vi[i]*alpha[j]!=0:
+                hi2 += ((v[i][j]**2)/(vi[i]*alpha[j]))
     print('Hi2 = ', hi2)
     for alpha in alphas:
         hi2_alpha = np.sqrt(2*l)*quantiles[alpha] + l
