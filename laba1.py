@@ -17,7 +17,7 @@ quantiles = {0.01: 2.326347874, 0.05: 1.644853627, 0.1: 1.281551566}
 
 L20 = [0, 11, 15, 17]
 L89 = [37, 88]
-#Блюма-Мікала
+#Bluma-Mikala
 A = int('5B88C41246790891C095E2878880342E88C79974303BD0400B090FE38A688356', 16)
 Q = int('675215CC3E227D3216C056CFA8F8822BB486F788641E85E0DE77097E1DB049F1', 16)
 P = int('CEA42B987C44FA642D80AD9F51F10457690DEF10C83D0BC1BCEE12FC3B6093E3', 16)
@@ -54,7 +54,7 @@ def LehmerLow(a, m ,c):
         x1 = (a*x0 + c)%m
         res.append(bin(x1)[2:][-8:])
         x0 = x1
-    return res
+    return [int(i, 2) for i in res]
 
 
 def LehmerHigh(a, m, c):
@@ -64,7 +64,7 @@ def LehmerHigh(a, m, c):
         x1 = (a*x0 + c)%m
         res.append(bin(x1)[2:][:8])
         x0 = x1
-    return res
+    return [int(i, 2) for i in res]
 
 
 def lfsr(state, taps, n):
@@ -135,7 +135,7 @@ def Blim_Mikal_bytes(a, q, p):
         k = bin(k)[2:]
         x.append('0'*(8 - len(k)) + k)
         T0 = T1
-    return x
+    return [int(i, 2) for i in x]
 
       
 def BBS(p, q):
@@ -158,16 +158,17 @@ def BBS_bytes(p, q):
         b = bin(r1%256)[2:]
         x.append('0'*(8 - len(b))+b)
         r0 = r1
-    return x
+    return [int(i, 2) for i in x]
 
 
-def group_to_bytes(vect):
-    if len(vect)%8!=0:
-        vect = '0'*(8 - len(vect)%8) + vect
-    result = []
-    for i in range(0, len(vect), 8):
-        result.append(int(vect[i:i+8], 2))
-    return result
+def check_hypothesis(hi, l):
+    print('   χ2 = ', hi)
+    for alpha in alphas:
+        hi2_alpha = np.sqrt(2*l)*quantiles[alpha] + l
+        if hi <= hi2_alpha:
+            print(f'   Test passed with α = {alpha}, χ2_(1-α) = {hi2_alpha}')
+        else:
+            print(f'   Test failed with α = {alpha}, χ2_(1-α) = {hi2_alpha}')
 
 
 
@@ -177,13 +178,7 @@ def equiprobability_test(nums, l = 255):
     for j in range(256):
         vi.append(nums.count(int(j)))
     hi2 = sum(((vi[i] - n)**2)/n for i in range(256))
-    print('   Hi2 = ', hi2)
-    for alpha in alphas:
-        hi2_alpha = np.sqrt(2*l)*quantiles[alpha] + l
-        if hi2 <= hi2_alpha:
-            print(f'   Test passed with alpha = {alpha}')
-        else:
-            print(f'   Test failed with alpha = {alpha}')
+    check_hypothesis(hi2, l)
 
             
   
@@ -201,13 +196,7 @@ def independence_test(nums, l = 65025):
             if vi[i]*alpha[j]!=0:
                 hi2 += ((v[i][j]**2)/(vi[i]*alpha[j]))
     hi2 = n*(hi2 - 1)
-    print('    Hi2 = ', hi2)
-    for alpha in alphas:
-        hi2_alpha = np.sqrt(2*l)*quantiles[alpha] + l
-        if hi2 <= hi2_alpha:
-            print(f'   Test passed with alpha = {alpha}')
-        else:
-            print(f'   Test failed with alpha = {alpha}')
+    check_hypothesis(hi2, l)
             
             
 def homogeneity_test(nums, r = 16):
@@ -229,110 +218,51 @@ def homogeneity_test(nums, r = 16):
             if vi[i]*alpha != 0 :
                 hi2 += (v[i][j]**2)/(vi[i]*alpha)
     hi2 = n*(hi2 - 1)
-    print('   Hi2 = ', hi2)
-    for alpha in alphas:
-        hi2_alpha = np.sqrt(2*l)*quantiles[alpha] + l
-        if hi2 <= hi2_alpha:
-            print(f'   Test passed with α = {alpha}, Hi2_(1-α) = {hi2_alpha}')
-        else:
-            print(f'   Test failed with α = {alpha}, Hi2_(1-α) = {hi2_alpha}')
+    check_hypothesis(hi2, l)
     
-          
-print('DEFAULT GENERATOR: ')
+
+def group_to_bytes(vect):
+    if len(vect)%8!=0:
+        vect = '0'*(8 - len(vect)%8) + vect
+    result = []
+    for i in range(0, len(vect), 8):
+        result.append(int(vect[i:i+8], 2))
+    return result
+
+
+def conv(lst):
+    return group_to_bytes(''.join([str(i) for i in lst]))
+
+    
+geffe = Geffe()
+while len(geffe) < 2**21:
+    geffe += Geffe()
+
+ 
+gens = {'DEFAULT GENERATOR' : group_to_bytes(bin(python_generator(2**21))[2:]), 
+        'LEHMER LOW' : LehmerLow(A_L, M_L, C_L),
+        'LEHMER HIGH' : LehmerHigh(A_L, M_L, C_L),
+        'L20' : conv(lfsr(generate_state(20), L20, 20)),
+        'L89' : conv(lfsr(generate_state(89), L89, 89)),
+        'GEFFE' : conv(geffe),
+        'LIBRARIAN' : group_to_bytes(librarian('voina-i-mir.txt')),
+        'WOLFRAM' :  conv(Wolfram()), 
+        'BlUMA-MIKALA' : conv(Blum_Mikal(A, Q, P)),
+        'BYTES BlUMA-MIKALA' : Blum_Mikal_bytes(A, Q, P),
+        'BBS' : conv(BBS(p, q)),
+        'BYTES BBS' : BBS_bytes(p, q)}
+
 start_time = time.time()
-vect1 = python_generator(2**21)
-print('1. Equiprobability Test: ')
-equiprobability_test(group_to_bytes(bin(vect1)[2:]))
-print('2. Independence Test: ')
-independence_test(group_to_bytes(bin(vect1)[2:]))
-print("   time: %s seconds " % (time.time() - start_time))
-print('LEHMER LOW: ')
-start_time = time.time()
-vect2 = LehmerLow(A_L, M_L, C_L)
-print('1. Equiprobability Test: ')
-equiprobability_test([int(i, 2) for i in vect2])
-print('2. Independence Test: ')
-independence_test([int(i, 2) for i in vect2])
-print("   time: %s seconds " % (time.time() - start_time))
-print('LEHMER HIGH: ')
-start_time = time.time()
-vect3 = LehmerHigh(A_L, M_L, C_L)
-print('1. Equiprobability Test: ')
-equiprobability_test([int(i, 2) for i in vect3])
-print('2. Independence Test: ')
-independence_test([int(i, 2) for i in vect3])
-print("   time: %s seconds " % (time.time() - start_time))
-print('L20: ')
-start_time = time.time()
-vect4 = lfsr(generate_state(20), L20, 20)
-print('1. Equiprobability Test: ')
-equiprobability_test(group_to_bytes(''.join([str(i) for i in vect4])))
-print('2. Independence Test: ')
-independence_test(group_to_bytes(''.join([str(i) for i in vect4])))
-print("  time: %s seconds " % (time.time() - start_time))
-print('L89: ')
-start_time = time.time()
-vect5 = lfsr(generate_state(89), L89, 89)
-print('1. Equiprobability Test: ')
-equiprobability_test(group_to_bytes(''.join([str(i) for i in vect5])))
-print('2. Independence Test: ')
-independence_test(group_to_bytes(''.join([str(i) for i in vect5])))
-print("   time: %s seconds " % (time.time() - start_time))
-print('GEFFE: ')
-start_time = time.time()
-vect6 = Geffe()
-while len(vect6) < 2**21:
-    vect6 += Geffe()
-print('1. Equiprobability Test: ')
-equiprobability_test(group_to_bytes(''.join([str(i) for i in vect6])))
-print('2. Independence Test: ')
-independence_test(group_to_bytes(''.join([str(i) for i in vect6])))
-print("   time: %s seconds " % (time.time() - start_time))
-print('LIBRARIAN: ')
-start_time = time.time()
-vect7 = librarian('voina-i-mir.txt')
-print('1. Equiprobability Test: ')
-equiprobability_test(group_to_bytes(vect7))
-print('2. Independence Test: ')
-independence_test(group_to_bytes(vect7))
-print("   time: %s seconds " % (time.time() - start_time))
-print('WOLFRAM: ')
-start_time = time.time()
-vect8 = Wolfram()
-print('1. Equiprobability Test: ')
-equiprobability_test(group_to_bytes(''.join([str(i) for i in vect8])))
-print('2. Independence Test: ')
-independence_test(group_to_bytes(''.join([str(i) for i in vect8])))
-print("   time: %s seconds " % (time.time() - start_time))
-print('BlUMA-MIKALA: ')
-start_time = time.time()
-vect9 = Blum_Mikal(A, Q, P)
-print('1. Equiprobability Test: ')
-equiprobability_test(group_to_bytes(''.join([str(i) for i in vect9])))
-print('2. Independence Test: ')
-independence_test(group_to_bytes(''.join([str(i) for i in vect9])))
-print("   time: %s seconds " % (time.time() - start_time))
-print('BYTES BlUMA-MIKALA: ')
-start_time = time.time()
-vect10 = Blum_Mikal_bytes(A, Q, P)
-print('1. Equiprobability Test: ')
-equiprobability_test([int(i, 2) for i in vect10])
-print('2. Independence Test: ')
-independence_test([int(i, 2) for i in vect10])
-print("   time: %s seconds " % (time.time() - start_time))
-print('BBS: ')
-start_time = time.time()
-vect11 = BBS(p, q)
-print('1. Equiprobability Test: ')
-equiprobability_test(group_to_bytes(''.join([str(i) for i in vect11])))
-print('2. Independence Test: ')
-independence_test(group_to_bytes(''.join([str(i) for i in vect11])))
-print("   time: %s seconds " % (time.time() - start_time))
-print('BYTES BBC: ')
-start_time = time.time()
-vect12 = BBS_bytes(p, q)  
-print('1. Equiprobability Test: ')
-equiprobability_test([int(i, 2) for i in vect12])
-print('2. Independence Test: ')
-independence_test([int(i, 2) for i in vect12])
-print("   time: %s seconds " % (time.time() - start_time))
+
+for gen in gens:
+    print(f'           {gen}')
+    print('1. Equiprobability test: ')
+    equiprobability_test(gens[gen])
+    print('2. Independence test: ')
+    independence_test(gens[gen])
+    print('3. Homogeneity test: ')
+    homogeneity_test(gens[gen])
+    
+print('Testing time: %s seconds ' % (time.time() - start_time))
+
+    
