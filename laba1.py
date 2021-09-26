@@ -188,8 +188,8 @@ def independence_test(nums, l = 65025):
     v = np.zeros((256, 256))
     for pair in set(pairs):
         v[pair[0]][pair[1]] = pairs.count(pair)
-    vi = [sum(v[i][j] for j in range(m)) for i in range(256)]
-    alpha = [sum(v[i][j] for i in range(m)) for j in range(256)]
+    vi = [sum(v[i][j] for j in range(256)) for i in range(256)]
+    alpha = [sum(v[i][j] for i in range(256)) for j in range(256)]
     hi2 = 0
     for i in range(256):
         for j in range(256):
