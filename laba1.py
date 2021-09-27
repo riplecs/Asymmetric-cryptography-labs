@@ -5,12 +5,12 @@ Created on Wed Sep  1 14:50:27 2021
 @author: RIPLECS
 """
 
-import random 
+from collections import Counter
 from bitstring import BitArray
 import numpy as np
+import random 
 import gmpy2
-
-
+import time
 
 alphas = [0.01, 0.05, 0.1]
 quantiles = {0.01: 2.326347874, 0.05: 1.644853627, 0.1: 1.281551566}
@@ -176,7 +176,7 @@ def equiprobability_test(nums, l = 255):
     n = len(nums)/256
     vi = []
     for j in range(256):
-        vi.append(nums.count(int(j)))
+        vi.append(nums.count(j))
     hi2 = sum(((vi[i] - n)**2)/n for i in range(256))
     check_hypothesis(hi2, l)
 
@@ -186,8 +186,9 @@ def independence_test(nums, l = 65025):
     n = int(len(nums)/2)
     pairs = [(nums[2*i], nums[2*i - 1]) for i in range(n)]
     v = np.zeros((256, 256))
-    for pair in set(pairs):
-        v[pair[0]][pair[1]] = pairs.count(pair)
+    unique_pairs = Counter(pairs)
+    for pair in unique_pairs:
+        v[pair[0]][pair[1]] = unique_pairs[pair]
     vi = [sum(v[i][j] for j in range(256)) for i in range(256)]
     alpha = [sum(v[i][j] for i in range(256)) for j in range(256)]
     hi2 = 0
@@ -200,12 +201,12 @@ def independence_test(nums, l = 65025):
             
             
 def homogeneity_test(nums, r = 16):
-    m_ = int(256/r)
+    m_ = int(len(nums)/r)
     n = m_*r 
     l = 255*(r - 1)
     strings = []
-    for i in range(0, len(nums), r):
-        strings.append(nums[i: i + r])
+    for i in range(0, len(nums), m_):
+        strings.append(nums[i: i + m_])
     v = np.zeros((256, r))
     for i in range(256):
         for j in range(r):
@@ -215,7 +216,7 @@ def homogeneity_test(nums, r = 16):
     hi2 = 0
     for i in range(256):
         for j in range(r):
-            if vi[i]*alpha != 0 :
+            if vi[i] != 0 :
                 hi2 += (v[i][j]**2)/(vi[i]*alpha)
     hi2 = n*(hi2 - 1)
     check_hypothesis(hi2, l)
@@ -255,7 +256,7 @@ gens = {'DEFAULT GENERATOR' : group_to_bytes(bin(python_generator(2**21))[2:]),
 start_time = time.time()
 
 for gen in gens:
-    print(f'           {gen}')
+    print(f'\n           {gen}\n')
     print('1. Equiprobability test: ')
     equiprobability_test(gens[gen])
     print('2. Independence test: ')
