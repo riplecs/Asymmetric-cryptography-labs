@@ -52,7 +52,8 @@ def LehmerLow(a, m ,c):
     res = []
     for i in range(2**18):
         x1 = (a*x0 + c)%m
-        res.append(bin(x1)[2:][-8:])
+        b = bin(x1)[2:]
+        res.append(('0'*(32 - len(b)) + b)[-8:])
         x0 = x1
     return [int(i, 2) for i in res]
 
@@ -62,7 +63,8 @@ def LehmerHigh(a, m, c):
     res = []
     for i in range(2**18):
         x1 = (a*x0 + c)%m
-        res.append(bin(x1)[2:][:8])
+        b = bin(x1)[2:]
+        res.append(('0'*(32 - len(b)) + b)[:8])
         x0 = x1
     return [int(i, 2) for i in res]
 
