@@ -236,36 +236,41 @@ def group_to_bytes(vect):
 def conv(lst):
     return group_to_bytes(''.join([str(i) for i in lst]))
 
+
+def main():
+    start_time = time.time()
     
-geffe = Geffe()
-while len(geffe) < 2**21:
-    geffe += Geffe()
-
- 
-gens = {'DEFAULT GENERATOR' : group_to_bytes(bin(python_generator(2**21))[2:]), 
-        'LEHMER LOW' : LehmerLow(A_L, M_L, C_L),
-        'LEHMER HIGH' : LehmerHigh(A_L, M_L, C_L),
-        'L20' : conv(lfsr(generate_state(20), L20, 20)),
-        'L89' : conv(lfsr(generate_state(89), L89, 89)),
-        'GEFFE' : conv(geffe),
-        'LIBRARIAN' : group_to_bytes(librarian('voina-i-mir.txt')),
-        'WOLFRAM' :  conv(Wolfram()), 
-        'BlUMA-MIKALA' : conv(Blum_Mikal(A, Q, P)),
-        'BYTES BlUMA-MIKALA' : Blum_Mikal_bytes(A, Q, P),
-        'BBS' : conv(BBS(p, q)),
-        'BYTES BBS' : BBS_bytes(p, q)}
-
-start_time = time.time()
-
-for gen in gens:
-    print(f'\n           {gen}\n')
-    print('1. Equiprobability test: ')
-    equiprobability_test(gens[gen])
-    print('2. Independence test: ')
-    independence_test(gens[gen])
-    print('3. Homogeneity test: ')
-    homogeneity_test(gens[gen])
+    geffe = Geffe()
+    while len(geffe) < 2**21:
+        geffe += Geffe()
     
-print('Testing time: %s seconds ' % (time.time() - start_time))
+    gens = {'DEFAULT GENERATOR' : group_to_bytes(bin(python_generator(2**21))[2:]), 
+            'LEHMER LOW' : LehmerLow(A_L, M_L, C_L),
+            'LEHMER HIGH' : LehmerHigh(A_L, M_L, C_L),
+            'L20' : conv(lfsr(generate_state(20), L20, 20)),
+            'L89' : conv(lfsr(generate_state(89), L89, 89)),
+            'GEFFE' : conv(geffe),
+            'LIBRARIAN' : group_to_bytes(librarian('voina-i-mir.txt')),
+            'WOLFRAM' :  conv(Wolfram()), 
+            'BlUMA-MIKALA' : conv(Blum_Mikal(A, Q, P)),
+            'BYTES BlUMA-MIKALA' : Blum_Mikal_bytes(A, Q, P),
+            'BBS' : conv(BBS(p, q)),
+            'BYTES BBS' : BBS_bytes(p, q)
+            }
 
-    
+    print('Generation time: %s seconds ' % (time.time() - start_time))
+    start_time = time.time()
+
+    for gen in gens:
+        print(f'\n           {gen}\n')
+        print('1. Equiprobability test: ')
+        equiprobability_test(gens[gen])
+        print('2. Independence test: ')
+        independence_test(gens[gen])
+        print('3. Homogeneity test: ')
+        homogeneity_test(gens[gen])
+
+    print('Testing time: %s seconds ' % (time.time() - start_time))
+
+if __name__ == '__main__':
+    main()
