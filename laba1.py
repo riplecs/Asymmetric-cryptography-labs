@@ -69,15 +69,15 @@ def LehmerHigh(a, m, c):
     return [int(i, 2) for i in res]
 
 
-def lfsr(state, taps, n):
-    res=[]
-    state0=state
-    it=0
+def lfsr(state, taps, n, lim = 2**21):
+    res = []
+    state0 = state
+    it = 0
     while True:
-        it+=1
-        res+=[state[0]]
-        state=state[1:]+[sum(state[i] for i in taps)%2]
-        if state==state0 or it==2**21:
+        it += 1
+        res += [state[0]]
+        state = state[1:] + [sum(state[i] for i in taps)%2]
+        if state == state0 or it == lim:
             break
     return res[:2**21]
 
