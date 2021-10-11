@@ -78,8 +78,7 @@ def lfsr(state, taps, n, lim = 2**21):
         res += [state[0]]
         state = state[1:] + [sum(state[i] for i in taps)%2]
         if state == state0 or it == lim:
-            break
-    return res[:2**21]
+            return res[:2**21]
 
 
 def Geffe():
