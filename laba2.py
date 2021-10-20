@@ -161,7 +161,6 @@ def RSA():
           f'{int(S_key["modulus"], 16)})')
     E = hex(A_public_key[0])[2:]
     N = hex(A_public_key[1])[2:]
-    M = conv(lfsr(generate_state(20), L20, 20, BITS))
     C = r.get('http://asymcryptwebservice.appspot.com/rsa/encrypt?modulus='
               f"{N}&publicExponent={E}"
               f'&message={hex(M)[2:]}&type=BYTES')
