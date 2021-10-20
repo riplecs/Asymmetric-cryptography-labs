@@ -122,7 +122,8 @@ def ReceiveKey(d1, k1, s1, my_public_key, public_key):
     return k == Encrypt(s, public_key)
     
     
-def main():
+
+if __name__=='__main__':
     p1 = choice_big_prime(2**(BITS - 1), 2**BITS - 1, BITS)
     q1 = choice_big_prime(2**(BITS - 1), 2**BITS - 1, BITS)
     while q1 == p1:
@@ -217,6 +218,3 @@ def main():
     print('\n\nДеякі числа, що не пройшли перевірку на простоту: ')
     for i in range(0, len(COMPOSITE_NUMS), 15):
         print(COMPOSITE_NUMS[i])
-    
-if __name__=='__main__':
-    main()
