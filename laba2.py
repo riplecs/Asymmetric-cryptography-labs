@@ -117,30 +117,3 @@ def ReceiveKey(d1, k1, s1, my_public_key, public_key):
     s = Decrypt(s1, d1, my_public_key)
     return k == Encrypt(s, public_key)
     
-
-def RSA():
-    p1 = choice_big_prime(2**(BITS - 1), 2**BITS - 1, BITS)
-    q1 = choice_big_prime(2**(BITS - 1), 2**BITS - 1, BITS)
-    while q1 == p1:
-        q1 = choice_big_prime(2**(BITS - 1), 2**BITS - 1, BITS)
-    p2 = choice_big_prime(p1, 2**BITS - 1, BITS)
-    q2 = choice_big_prime(q1, 2**BITS - 1, BITS)
-    while p2 == q2:
-        q2 = choice_big_prime(2**(BITS - 1), 2**BITS - 1, BITS)
-    d1, A_public_key = GenerateKeyPair(p1, q1)
-    d2, B_public_key = GenerateKeyPair(p2, q2)
-    while B_public_key[1] <  A_public_key[1]:
-        d1, A_public_key = GenerateKeyPair(p1, q1)
-    M = conv(lfsr(generate_state(20), L20, 20, BITS))
-    print('Message:', M)
-    print('A public_key:')
-    print('    e1: ', A_public_key[0])
-    print('    n1: ', A_public_key[1])
-    C1 = Encrypt(M, A_public_key)
-    print('Encrypted message: ', )
-    print('B public_key:')
-    print('    e2: ', B_public_key[0])
-    print('    n2: ', B_public_key[1])
-    
-    
-RSA()
