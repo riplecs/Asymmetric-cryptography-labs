@@ -11,11 +11,11 @@ from laba1 import L20
 import requests as r
 import random
 import gmpy2
-import time
+
 
 
 PRIMES = [2, 3, 5, 7, 11, 13, 17, 23, 29, 31, 37, 41, 43]
-BITS = 32
+BITS = 256
 COMPOSITE_NUMS = []
 
 
@@ -48,7 +48,7 @@ def Miller_Rabin_test(p, k = 1000):
         x = gmpy2.powmod(x, d, p)
         if x == 1 or gmpy2.sub(x, p) == -1:
             continue
-        for r in range(1, s):
+        for l in range(1, s):
             x = gmpy2.powmod(x, 2, p)
             if gmpy2.sub(x, p) == -1:
                 triger = True
@@ -75,9 +75,11 @@ def choice_big_prime(n0, n1, b):
             x = conv(lfsr(generate_state(20), L20, 20, b))
         m0 = x if gmpy2.f_mod(x, 2) == 1 else x + 1
         for i in range(gmpy2.f_div(gmpy2.sub(n1, m0), 2) + 1):
-            if Miller_Rabin_test(m0 + 2*i):
-                p = m0 + 2*i
+            num = m0 + 2*i
+            if Miller_Rabin_test(num):
+                p = num
                 break
+            COMPOSITE_NUMS.append(num)
     return p
 
 
@@ -120,7 +122,7 @@ def ReceiveKey(d1, k1, s1, my_public_key, public_key):
     return k == Encrypt(s, public_key)
     
     
-def RSA():
+def main():
     p1 = choice_big_prime(2**(BITS - 1), 2**BITS - 1, BITS)
     q1 = choice_big_prime(2**(BITS - 1), 2**BITS - 1, BITS)
     while q1 == p1:
@@ -131,11 +133,11 @@ def RSA():
         q2 = choice_big_prime(2**(BITS - 1), 2**BITS - 1, BITS)
     d1, A_public_key = GenerateKeyPair(p1, q1)
     d2, B_public_key = GenerateKeyPair(p2, q2)
-    while B_public_key[1] <  A_public_key[1]:
-        d1, A_public_key = GenerateKeyPair(p1, q1)
     M = conv(lfsr(generate_state(20), L20, 20, BITS))
     while M >= B_public_key[1] or M >= A_public_key[1]:
         M = conv(lfsr(generate_state(20), L20, 20, BITS))
+    secrets = [p1, q1, p2, q2]
+    print('\n_______Приклади обміну повідомленнями в схемі RSA_______\n')
     print('Випадкове повідомлення:', M)
     print('\nВідкритий ключ юзера А:')
     print(f'(e1, n1) = ({A_public_key[0]}, {A_public_key[1]})')
@@ -146,16 +148,11 @@ def RSA():
           'відкритий ключ юзера В:', C, 'і надсилає йому.')
     print('\nЮзер В розшифровує повідомлення, використовуючи  '
           'cвій секретний ключ: ', Decrypt(C, d2, B_public_key))
-    print('\n***Тепер обміняємось повідомленням із сайтом***')
+    print('\n* Тепер обміняємось повідомленням із сайтом.')
     print('\nНехай сайт надсилатиме юзеру А зашифроване повідомлення.')
     S_key = r.get('http://asymcryptwebservice.appspot.com/rsa/serverKey?'
                   f'keySize={BITS}').json()
-    print('\nЮзер А обмінюється відкритими ключами із сайтом. '
-          'Проводиться перевірка, чи модуль юзера А менший за модуль сайту, '
-          'і, в разі необхідності, сайт змінює свій модуль.')
-    while A_public_key[1] < int(S_key['modulus'], 16):
-        S_key = r.get('http://asymcryptwebservice.appspot.com/rsa/serverKey?'
-                  f'keySize={BITS}').json()
+    print('\nЮзер А обмінюється відкритими ключами із сайтом...')
     print('\nВідкритий ключ cайту:')
     print(f'(e_s, n_s) = ({int(S_key["publicExponent"], 16)},' 
           f'{int(S_key["modulus"], 16)})')
@@ -165,15 +162,61 @@ def RSA():
               f"{N}&publicExponent={E}"
               f'&message={hex(M)[2:]}&type=BYTES')
     CipherText = int(C.json()['cipherText'], 16)
-    print('\nЗашифроване повідомлення, що отримав юзер А:', CipherText)
-    print('\nЮзер А розшифровує його за допомогою свого секретного ключа. ')
+    print('\nСайт, використовуючи відкритий ключ юзера А, шифрує '
+          'деяке повідомлення і надсилає його юзеру А:', CipherText)
+    print('\nЮзер А розшифровує його за допомогою свого секретного ключа...')
     Dec = Decrypt(CipherText, d1, A_public_key)
     if Dec == M:
         print('\nЮзер А успішно розшифрував повідомлення:', Dec)
     else:
         print('\nЩось пішло не так!')
+    print('\n_______Розглянемо тепер приклад обміну повідомлення із цифровим підписом_______')
+    print('\nЮзер А бере свої вікриті та закриті ключі, повідомлення, '
+          'робить цифровий підпис і надсилає його юзеру B:')
+    signed_mess = Sign(M, d1, A_public_key)
+    print('\nЦП: ', int(signed_mess[1]))
+    print('\nЮзер В перевіряє правильність цифрового підпису...')
+    if Verify(signed_mess, A_public_key):
+        print('\nВерифікація пройшла успішно!')
+    else:
+        print('\nЦифровий підпис невірний!')
+    print('\n* Cпробуємо тепер надіслати його сайту.')
+    check = r.get('http://asymcryptwebservice.appspot.com/rsa/verify?message='
+                  f'{hex(M)[2:]}&type=BYTES&signature={hex(signed_mess[1])[2:]}'
+                  f'&modulus={N}&publicExponent={E}').json()
+    print('\nСайт перевіряє правильність цифрового підпису...')
+    if check['verified']:
+        print('\nВерифікація пройшла успішно!')
+    else:
+        print('\nЦифровий підпис невірний!')
+    print('\n_______Приклад роботи протоколу конфіденційного розсилання ключів_______')
+    k = conv(lfsr(generate_state(20), L20, 20, BITS))
+    while k >= A_public_key[1]:
+        k = conv(lfsr(generate_state(20), L20, 20, BITS))
+    print('\nЮзеру А треба конфіденційно передати юзеру В значення k:', k)
+    print('\nПеревірка, чи n2 < n1...')
+    if B_public_key[1] < A_public_key[1]:
+        while B_public_key[1] < A_public_key[1]:
+            d1, A_public_key = GenerateKeyPair(p1, q1)
+        print('\nНовий відкритий ключ юзера А:')
+        print(f'(e1, n1) = ({A_public_key[0]}, {A_public_key[1]})')
+    else:
+        print('\nКлючі юзера А не змінилися.')
+    print('\nЮзер А формує повідомлення і надсилає його юзеру В: ')
+    K1, S1 = SendKey(k, d1, A_public_key, B_public_key)
+    print((int(K1), int(S1)))
+    if ReceiveKey(d2, K1, S1, B_public_key, A_public_key):
+        print('\nЮзер В отримав повідомлення, знайшов k і перевірив підпис,'
+              ' все добре.')
+    else:
+        print('Щось пішло не так!')
+    print('\n____________________________________________________________________')
+    print('\nЗначення p і q для юзерів А та В: ')
+    print('p1 = ', secrets[0], '\nq1 = ', secrets[1], 
+          '\np2 = ', secrets[2], '\nq2 = ', secrets[3])
+    print('\n\nДеякі числа, що не пройшли перевірку на простоту: ')
+    for i in range(0, len(COMPOSITE_NUMS), 15):
+        print(COMPOSITE_NUMS[i])
     
-print('\n***Приклади обміну повідомленнями в схемі RSA***\n')
-RSA()
-#print('Числа, що не пройшли перевірки на простоту: ')
-#print(COMPOSITE_NUMS)
+if __name__=='__main__':
+    main()
