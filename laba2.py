@@ -96,7 +96,7 @@ def Encrypt(message, public_key):
 
 
 def Sign(message, d, public_key):
-    return (message, Encrypt(message, d, public_key[1]))
+    return (message, Encrypt(message, (d, public_key[1])))
  
     
 def Decrypt(cypher_message, d, public_key):
