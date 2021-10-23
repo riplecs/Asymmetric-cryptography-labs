@@ -71,7 +71,7 @@ def choice_big_prime(n0, n1, b):
     p = None
     while p == None:
         x = conv(lfsr(generate_state(20), L20, 20, b))
-        while x < n0:
+        while x < n0 or x > n1:
             x = conv(lfsr(generate_state(20), L20, 20, b))
         m0 = x if gmpy2.f_mod(x, 2) == 1 else x + 1
         for i in range(gmpy2.f_div(gmpy2.sub(n1, m0), 2) + 1):
@@ -97,12 +97,12 @@ def Encrypt(message, public_key):
     return gmpy2.powmod(message, public_key[0], public_key[1])
 
 
-def Sign(message, d, public_key):
-    return (message, Encrypt(message, (d, public_key[1])))
- 
-    
 def Decrypt(cypher_message, d, public_key):
     return gmpy2.powmod(cypher_message, d, public_key[1])
+
+
+def Sign(message, d, public_key):
+    return (message, Decrypt(message, d, my_public_key))
 
 
 def Verify(sign, public_key):
@@ -137,7 +137,6 @@ if __name__=='__main__':
     M = conv(lfsr(generate_state(20), L20, 20, BITS))
     while M >= B_public_key[1] or M >= A_public_key[1]:
         M = conv(lfsr(generate_state(20), L20, 20, BITS))
-    secrets = [p1, q1, p2, q2]
     print('\n_______Приклади обміну повідомленнями в схемі RSA_______\n')
     print('Випадкове повідомлення:', M)
     print('\nВідкритий ключ юзера А:')
@@ -213,8 +212,31 @@ if __name__=='__main__':
         print('Щось пішло не так!')
     print('\n' + 100*'_')
     print('\nЗначення p і q для юзерів А та В: ')
-    print('p1 = ', secrets[0], '\nq1 = ', secrets[1], 
-          '\np2 = ', secrets[2], '\nq2 = ', secrets[3])
+    print('p1 = ', p1, '\nq1 = ', q1, 
+          '\np2 = ', p2, '\nq2 = ', q2)
     print('\n\nДеякі числа, що не пройшли перевірку на простоту: ')
     for i in range(0, len(COMPOSITE_NUMS), 15):
         print(COMPOSITE_NUMS[i])
+    #########################################################################
+    site_n = int('9AAB3D2F5F7AF077F6C0D373050BE298B43585DF605DA3028583EA7E0269F'
+                 'ABD601210C1B95B6B26E9F67497ADF3AAF707EDAB51BEB06E3526495B46C3FEE267', 16)
+    site_e = int('10001', 16)
+    while site_n < A_public_key[1]:
+        d1, A_public_key = GenerateKeyPair(p1, q1)
+    print('\nПублічний ключ юзера А в hex: ')
+    print(hex(A_public_key[0])[2:], hex(A_public_key[1])[2:])
+    print('\nСгенеруємо випадкове k: ')    
+    k = conv(lfsr(generate_state(20), L20, 20, BITS))
+    while k >= site_n or k >= A_public_key[1]:
+        k = conv(lfsr(generate_state(20), L20, 20, BITS))
+    print('k = ', hex(k)[2:])
+    print('\nCформуємо повідомлення (k1, S1), використовуючи відкритий'
+          ' ключ сайту: ')
+    K1, S1 = SendKey(k, d1, A_public_key, (site_e, site_n))
+    print('k1 = ', hex(K1)[2:], 's1 = ', hex(S1)[2:])
+    print(f'http://asymcryptwebservice.appspot.com/rsa/receiveKey?key={hex(K1)[2:]}'
+          f'&signature={hex(S1)[2:]}&modulus={hex(A_public_key[1])[2:]}'
+          f'&publicExponent={hex(A_public_key[0])[2:]}')
+ 
+    
+
