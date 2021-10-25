@@ -151,7 +151,7 @@ if __name__=='__main__':
     print('\n* Тепер обміняємось повідомленням із сайтом.')
     print('\nНехай сайт надсилатиме юзеру А зашифроване повідомлення.')
     S_key = r.get('http://asymcryptwebservice.appspot.com/rsa/serverKey?'
-                  f'keySize={BITS}').json()
+                  f'keySize={2*BITS}').json()
     print('\nЮзер А обмінюється відкритими ключами із сайтом...')
     print('\nВідкритий ключ cайту:')
     print(f'(e_s, n_s) = ({int(S_key["publicExponent"], 16)},' 
