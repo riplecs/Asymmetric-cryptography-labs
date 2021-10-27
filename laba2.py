@@ -41,7 +41,6 @@ def Miller_Rabin_test(p, k = 1000):
         return False
     s, d = decomposition(p-1)
     for it in range(k):
-        triger = None
         x = random.randint(2, p)
         if gmpy2.gcd(x, p) > 1:
             return False
@@ -51,14 +50,11 @@ def Miller_Rabin_test(p, k = 1000):
         for l in range(1, s):
             x = gmpy2.powmod(x, 2, p)
             if gmpy2.sub(x, p) == -1:
-                triger = True
                 break
             elif x == 1:
                 return False
             else:
                 continue
-        if triger:
-            continue
         return False
     return True
 
