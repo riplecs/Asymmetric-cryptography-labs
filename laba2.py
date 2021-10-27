@@ -63,12 +63,12 @@ def conv(lst):
     return int(''.join([str(i) for i in lst]), 2)    
     
 
-def choice_big_prime(n0, n1, b):
+def choice_big_prime(n0, n1):
     p = None
     while p == None:
-        x = conv(lfsr(generate_state(20), L20, 20, b))
+        x = conv(lfsr(generate_state(20), L20, 20, BITS))
         while x < n0 or x > n1:
-            x = conv(lfsr(generate_state(20), L20, 20, b))
+            x = conv(lfsr(generate_state(20), L20, 20, BITS))
         m0 = x if gmpy2.f_mod(x, 2) == 1 else x + 1
         for i in range(gmpy2.f_div(gmpy2.sub(n1, m0), 2) + 1):
             num = m0 + 2*i
@@ -120,14 +120,14 @@ def ReceiveKey(d1, k1, s1, my_public_key, public_key):
     
 
 if __name__=='__main__':
-    p1 = choice_big_prime(2**(BITS - 1), 2**BITS - 1, BITS)
-    q1 = choice_big_prime(2**(BITS - 1), 2**BITS - 1, BITS)
+    p1 = choice_big_prime(2**(BITS - 1), 2**BITS - 1)
+    q1 = choice_big_prime(2**(BITS - 1), 2**BITS - 1)
     while q1 == p1:
-        q1 = choice_big_prime(2**(BITS - 1), 2**BITS - 1, BITS)
-    p2 = choice_big_prime(p1, 2**BITS - 1, BITS)
-    q2 = choice_big_prime(q1, 2**BITS - 1, BITS)
+        q1 = choice_big_prime(2**(BITS - 1), 2**BITS - 1)
+    p2 = choice_big_prime(p1, 2**BITS - 1)
+    q2 = choice_big_prime(q1, 2**BITS - 1)
     while p2 == q2:
-        q2 = choice_big_prime(2**(BITS - 1), 2**BITS - 1, BITS)
+        q2 = choice_big_prime(2**(BITS - 1), 2**BITS - 1)
     d1, A_public_key = GenerateKeyPair(p1, q1)
     d2, B_public_key = GenerateKeyPair(p2, q2)
     M = conv(lfsr(generate_state(20), L20, 20, BITS))
