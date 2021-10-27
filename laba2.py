@@ -167,7 +167,7 @@ if __name__=='__main__':
     else:
         print('\nЩось пішло не так!')
     print('\n_______Розглянемо тепер приклад обміну повідомлення із цифровим підписом_______')
-    print('\nЮзер А бере свої вікриті та закриті ключі, повідомлення, '
+    print('\nЮзер А бере свої вікриті та секретні ключі, повідомлення, '
           'робить цифровий підпис і надсилає його юзеру B:')
     signed_mess = Sign(M, d1, A_public_key)
     print('\nЦП: ', int(signed_mess[1]))
@@ -232,7 +232,7 @@ if __name__=='__main__':
     site_e = int('10001', 16)
     while site_n < A_public_key[1]:
         d1, A_public_key = GenerateKeyPair(p1, q1)
-    print('\nПублічний ключ юзера А в hex: ')
+    print('\Відкритий ключ юзера А в hex: ')
     print(hex(A_public_key[0])[2:], hex(A_public_key[1])[2:])
     print('\nСгенеруємо випадкове k: ')    
     k = conv(lfsr(generate_state(20), L20, 20, BITS))
