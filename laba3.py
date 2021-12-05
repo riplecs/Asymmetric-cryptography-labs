@@ -73,7 +73,7 @@ def Encrypt(m, l, b, n):
     y = x*(x + b)%n
     c1 = int(((x + b*inv2)%n)%2)
     c2 = Iverson_bracket(x, b, n)
-    return (y, c1, c2)
+    return y, c1, c2
 
 
 def Decrypt(y, c1, c2, b, p, q, n):
