@@ -184,6 +184,7 @@ if __name__ == '__main__':
                         f'message={hex(message)[2:]}&type=BYTES').json()
     new_signedMess = int(new_sign['signature'], 16)
     print(new_signedMess)
+    print('\nПеревіряємо правильність цифрового підпису...')
     if Verify(message, new_signedMess, site_n):
         print('\nВерифікація пройшла успішно!')
     else:
