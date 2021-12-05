@@ -195,4 +195,4 @@ if __name__ == '__main__':
     print(f'З {i}ї спроби знайдено розклад модуля n = {new_n} на множники:')
     print('p = ', new_p)
     print('q = ', new_q)
-    print('Перевірка: n - q*p = ',new_n - new_q*new_p)
+    print('Перевірка: n - p*q = ',new_n - new_q*new_p)
